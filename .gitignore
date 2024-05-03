@@ -1,3 +1,4 @@
+model.pth
 datasets/flowers-102/102flowers.tgz
 datasets/flowers-102/imagelabels.mat
 datasets/flowers-102/setid.mat
