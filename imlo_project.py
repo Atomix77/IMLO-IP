@@ -95,7 +95,6 @@ device = (
     if torch.backends.mps.is_available()
     else "cpu"
 )
-print(f"Using {device} device")
 
 """# Create Aritecture"""
 
@@ -155,7 +154,7 @@ class NeuralNetwork(nn.Module):
         dummyInput = torch.zeros(1, 3, 256, 256)
         dummyOutput = self.convStack(dummyInput)
         self.convOutputSize = dummyOutput.view(1, -1).size(1)
-        print(self.convOutputSize)
+        # print(self.convOutputSize)
 
         self.classifier = nn.Sequential(
             nn.Flatten(),
@@ -258,42 +257,7 @@ def testModel(dataloader, model, lossFunction):
     print(f"Testing: Accuracy: {(correct):>0.1f}%, Avg loss: {testLoss:>8f} \n")
     return testLoss, correct
 
-"""# Model Evaluation"""
-
-learningRate = 0.0001
-weightDecay = 0.0001
-epochs = 1000
-
-bestValAccuracy = 0.0
-bestValLoss = float('inf')
-bestEpoch = 0
-
-valLosses = []
-valAccuracies = []
-
-lossFunction = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=learningRate, weight_decay=weightDecay)
-scheduler = lr_scheduler.StepLR(optimizer, step_size=450, gamma=0.99)
-
-for epoch in range(epochs):
-    print(f'Epoch {epoch+1}:')
-    trainModel(trainingDataloader, model, lossFunction, optimizer)
-    valLoss, valAccuracy = validateModel(validationDataloader, model, lossFunction)
-    valLosses.append(valLoss)
-    valAccuracies.append(valAccuracy)
-    scheduler.step()
-
-    if (valLoss < bestValLoss):
-        bestValLoss = valLoss
-        bestValAccuracy = valAccuracy
-        bestEpoch = epoch+1
-
-testModel(testDataloader, model, lossFunction)
-print(f'Best Accuracy: {bestValAccuracy}. Best Loss: {bestValLoss} Best Epoch: {bestEpoch}')
-print("Finished")
-
-# Save model
-torch.save(model.state_dict(),'bestModel.pt')
+"""# Model Results"""
 
 """Testing: Accuracy: 75.2%, Avg loss: 0.032671 - 1000 epochs (434 mins - 7 hrs 12 mins)
 
@@ -313,22 +277,59 @@ Testing: Accuracy: 48.1%, Avg loss: 0.069918  - 200 epochs
 
 Testing: Accuracy: 48.5%, Avg loss: 0.063186 - 200 epochs
 
-# Graph
 """
 
-# Plot the loss values
-plt.plot(range(epochs), losses)
-plt.plot(range(epochs), valLosses)
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.title('Loss per Epoch')
-plt.legend(['Training Loss', 'Validation Loss'], loc='upper right')
-plt.show()
+if __name__ == '__main__':
 
-plt.plot(range(epochs), accuracy)
-plt.plot(range(epochs), valAccuracies)
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.title('Accuracy per Epoch')
-plt.legend(['Training Accuracy', 'Validation Accuracy'], loc='upper left')
-plt.show()
+    """# Model Evaluation"""
+    learningRate = 0.0001
+    weightDecay = 0.0001
+    epochs = 1000
+
+    bestValAccuracy = 0.0
+    bestValLoss = float('inf')
+    bestEpoch = 0
+
+    valLosses = []
+    valAccuracies = []
+
+    lossFunction = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learningRate, weight_decay=weightDecay)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=450, gamma=0.99)
+
+    for epoch in range(epochs):
+        print(f'Epoch {epoch+1}:')
+        trainModel(trainingDataloader, model, lossFunction, optimizer)
+        valLoss, valAccuracy = validateModel(validationDataloader, model, lossFunction)
+        valLosses.append(valLoss)
+        valAccuracies.append(valAccuracy)
+        scheduler.step()
+
+        if (valLoss < bestValLoss):
+            bestValLoss = valLoss
+            bestValAccuracy = valAccuracy
+            bestEpoch = epoch+1
+
+    testModel(testDataloader, model, lossFunction)
+    print(f'Best Accuracy: {bestValAccuracy}. Best Loss: {bestValLoss} Best Epoch: {bestEpoch}')
+    print("Finished")
+
+    # Save model
+    torch.save(model.state_dict(),'bestModel.pt')
+    
+    # Plot the loss values
+    plt.plot(range(epochs), losses)
+    plt.plot(range(epochs), valLosses)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss per Epoch')
+    plt.legend(['Training Loss', 'Validation Loss'], loc='upper right')
+    plt.show()
+
+    plt.plot(range(epochs), accuracy)
+    plt.plot(range(epochs), valAccuracies)
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title('Accuracy per Epoch')
+    plt.legend(['Training Accuracy', 'Validation Accuracy'], loc='upper left')
+    plt.show()
